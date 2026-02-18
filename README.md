@@ -126,10 +126,7 @@ const db = (query);
 
 mongoose.Promise = global.Promise;
 
-mongoose.connect(db, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-}).then(() => {
+mongoose.connect(db).then(() => {
     console.log('Conexión a la base de datos exitosa');
 }).catch((err) => {
     console.error('Error al conectar a la base de datos', err);

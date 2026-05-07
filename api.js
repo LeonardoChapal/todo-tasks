@@ -2,7 +2,7 @@ var TaskModel = require('./task_schema');
 var mongoose = require("mongoose");
 var express = require("express");
 var router = express.Router();
-var query = "mongodb+srv://leonardochapaldiaz_db_user:fXdBbDwmqWtdp4W1@cluster0.kipxzq8.mongodb.net/?appName=Cluster0"
+var query = "mongodb+srv://leonardochapaldiaz_db_user:Zr95wmwnzc8Lx6zg@cluster0.kipxzq8.mongodb.net/?appName=Cluster0"
 const db = (query);
 
 mongoose.Promise = global.Promise;

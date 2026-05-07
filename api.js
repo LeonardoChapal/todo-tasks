@@ -2,7 +2,22 @@ var TaskModel = require('./task_schema');
 var mongoose = require("mongoose");
 var express = require("express");
 var router = express.Router();
-var query = "mongodb+srv://leonardochapaldiaz_db_user:Zr95wmwnzc8Lx6zg@cluster0.kipxzq8.mongodb.net/?appName=Cluster0"
+let environment = null;
+
+if (!process.env.ON_HEROKU) {
+    console.log("Cargando variables de entorno desde archivo");
+    const env = require('node-env-file');
+    env(__dirname + '/.env');
+}
+
+environment = {
+    DBMONGOUSER: process.env.DBMONGOUSER,
+    DBMONGOPASS: process.env.DBMONGOPASS,
+    DBMONGOSERV: process.env.DBMONGOSERV,
+    DBMONGO: process.env.DBMONGO,
+};
+
+var query = 'mongodb+srv://' + environment.DBMONGOUSER + ':' + environment.DBMONGOPASS + '@' + environment.DBMONGOSERV + '/' + environment.DBMONGO + '?retryWrites=true&w=majority';
 const db = (query);
 
 mongoose.Promise = global.Promise;

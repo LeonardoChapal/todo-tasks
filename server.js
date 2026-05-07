@@ -1,16 +1,17 @@
 const api = require('./api');
 const bodyParser = require('body-parser');
 const express = require('express');
+const path = require('path');
 const port = process.env.PORT || 3000;
 const app = express();
 
 app.use(bodyParser.json());
 app.use('/api', api);
 
-app.listen(port, function () {
-    console.log("Server is listening at port: " + port);
+app.get('/', function (req, res) {
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.get('/', function (req, res) {
-    res.send("hello world");
+app.listen(port, function () {
+    console.log("Server is listening at port: " + port);
 });

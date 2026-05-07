@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gestor de Tareas</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #e0c3fc 0%, #c9b8f5 40%, #a8d8ea 100%);
+      background-attachment: fixed;
+      color: #333;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 2rem;
+      font-size: 1.8rem;
+      color: #2c3e50;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      max-width: 1100px;
+      margin: 0 auto 2rem;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    }
+
+    .card h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      padding-bottom: .5rem;
+      border-bottom: 2px solid #eee;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+
+    .badge {
+      font-size: .7rem;
+      padding: .2rem .5rem;
+      border-radius: 20px;
+      font-weight: 700;
+      letter-spacing: .5px;
+    }
+    .badge-post  { background: #d4edda; color: #155724; }
+    .badge-get   { background: #cce5ff; color: #004085; }
+    .badge-put   { background: #fff3cd; color: #856404; }
+    .badge-delete{ background: #f8d7da; color: #721c24; }
+
+    label { display: block; font-size: .85rem; font-weight: 600; margin-bottom: .25rem; }
+
+    input {
+      width: 100%;
+      padding: .55rem .75rem;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: .9rem;
+      margin-bottom: .85rem;
+      transition: border-color .2s;
+    }
+    input:focus { outline: none; border-color: #3498db; }
+
+    button {
+      width: 100%;
+      padding: .65rem;
+      border: none;
+      border-radius: 6px;
+      font-size: .9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .2s;
+    }
+    button:hover { opacity: .85; }
+    button:active { opacity: .7; }
+
+    .btn-create { background: #27ae60; color: #fff; }
+    .btn-get    { background: #2980b9; color: #fff; }
+    .btn-update { background: #f39c12; color: #fff; }
+    .btn-delete { background: #e74c3c; color: #fff; }
+
+    .msg {
+      margin-top: .75rem;
+      font-size: .82rem;
+      min-height: 1.2rem;
+      font-weight: 600;
+    }
+    .msg.ok  { color: #27ae60; }
+    .msg.err { color: #e74c3c; }
+
+    /* Tasks table */
+    .table-wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+      overflow: hidden;
+    }
+
+    .table-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid #eee;
+    }
+
+    .table-header h2 { font-size: 1rem; color: #2c3e50; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .875rem;
+    }
+
+    thead th {
+      background: #f8f9fa;
+      padding: .75rem 1rem;
+      text-align: left;
+      font-weight: 700;
+      color: #555;
+      border-bottom: 2px solid #e9ecef;
+    }
+
+    tbody tr { border-bottom: 1px solid #f0f2f5; transition: background .15s; }
+    tbody tr:hover { background: #f8faff; }
+    tbody td { padding: .7rem 1rem; }
+
+    #empty-row td {
+      text-align: center;
+      padding: 2rem;
+      color: #aaa;
+      font-style: italic;
+    }
+
+    .loading { text-align: center; padding: 2rem; color: #aaa; }
+  </style>
+</head>
+<body>
+
+  <h1>Gestor de Tareas</h1>
+
+  <div class="grid">
+
+    <!-- CREATE -->
+    <div class="card">
+      <h2><span class="badge badge-post">POST</span> Crear Tarea</h2>
+      <label for="c-id">ID de Tarea</label>
+      <input id="c-id" type="number" placeholder="Ej: 1" />
+
+      <label for="c-name">Nombre</label>
+      <input id="c-name" type="text" placeholder="Ej: Diseñar base de datos" />
+
+      <label for="c-deadline">Fecha límite</label>
+      <input id="c-deadline" type="date" />
+
+      <button class="btn-create" onclick="createTask()">Crear Tarea</button>
+      <p id="msg-create" class="msg"></p>
+    </div>
+
+    <!-- UPDATE -->
+    <div class="card">
+      <h2><span class="badge badge-put">PUT</span> Actualizar Tarea</h2>
+      <label for="u-id">ID de Tarea a actualizar</label>
+      <input id="u-id" type="number" placeholder="Ej: 1" />
+
+      <label for="u-name">Nuevo nombre</label>
+      <input id="u-name" type="text" placeholder="Ej: Rediseñar base de datos" />
+
+      <label for="u-deadline">Nueva fecha límite</label>
+      <input id="u-deadline" type="date" />
+
+      <button class="btn-update" onclick="updateTask()">Actualizar Tarea</button>
+      <p id="msg-update" class="msg"></p>
+    </div>
+
+    <!-- DELETE -->
+    <div class="card">
+      <h2><span class="badge badge-delete">DELETE</span> Eliminar Tarea</h2>
+      <label for="d-id">ID de Tarea a eliminar</label>
+      <input id="d-id" type="number" placeholder="Ej: 1" />
+
+      <button class="btn-delete" onclick="deleteTask()">Eliminar Tarea</button>
+      <p id="msg-delete" class="msg"></p>
+    </div>
+
+  </div>
+
+  <!-- LIST -->
+  <div class="table-wrap">
+    <div class="table-header">
+      <h2>Listado de Tareas</h2>
+      <button class="btn-get" style="width:auto;padding:.5rem 1.2rem;" onclick="loadTasks()">
+        <span class="badge badge-get" style="margin-right:.3rem">GET</span> Recargar
+      </button>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Fecha límite</th>
+        </tr>
+      </thead>
+      <tbody id="tasks-body">
+        <tr id="empty-row"><td colspan="3">Cargando tareas...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    const BASE = '/api';
+
+    function showMsg(id, text, ok) {
+      const el = document.getElementById(id);
+      el.textContent = text;
+      el.className = 'msg ' + (ok ? 'ok' : 'err');
+      setTimeout(() => { el.textContent = ''; el.className = 'msg'; }, 4000);
+    }
+
+    function fmtDate(iso) {
+      if (!iso) return '—';
+      const d = new Date(iso);
+      return isNaN(d) ? iso : d.toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: '2-digit' });
+    }
+
+    async function loadTasks() {
+      const tbody = document.getElementById('tasks-body');
+      tbody.innerHTML = '<tr><td colspan="3" class="loading">Cargando...</td></tr>';
+      try {
+        const res = await fetch(BASE + '/all-tasks');
+        const data = await res.json();
+        if (!Array.isArray(data) || data.length === 0) {
+          tbody.innerHTML = '<tr id="empty-row"><td colspan="3">No hay tareas registradas.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = data.map(t => `
+          <tr>
+            <td>${t.TaskId ?? '—'}</td>
+            <td>${t.Name ?? '—'}</td>
+            <td>${fmtDate(t.Deadline)}</td>
+          </tr>`).join('');
+      } catch {
+        tbody.innerHTML = '<tr id="empty-row"><td colspan="3">Error al cargar las tareas.</td></tr>';
+      }
+    }
+
+    async function createTask() {
+      const id       = document.getElementById('c-id').value.trim();
+      const name     = document.getElementById('c-name').value.trim();
+      const deadline = document.getElementById('c-deadline').value;
+
+      if (!id || !name || !deadline) { showMsg('msg-create', 'Completa todos los campos.', false); return; }
+
+      try {
+        const res = await fetch(BASE + '/create-task', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ TaskId: Number(id), Name: name, Deadline: deadline })
+        });
+        if (res.ok) {
+          showMsg('msg-create', 'Tarea creada correctamente.', true);
+          document.getElementById('c-id').value = '';
+          document.getElementById('c-name').value = '';
+          document.getElementById('c-deadline').value = '';
+          loadTasks();
+        } else {
+          showMsg('msg-create', 'Error al crear la tarea.', false);
+        }
+      } catch {
+        showMsg('msg-create', 'Error de conexión.', false);
+      }
+    }
+
+    async function updateTask() {
+      const id       = document.getElementById('u-id').value.trim();
+      const name     = document.getElementById('u-name').value.trim();
+      const deadline = document.getElementById('u-deadline').value;
+
+      if (!id || !name || !deadline) { showMsg('msg-update', 'Completa todos los campos.', false); return; }
+
+      try {
+        const res = await fetch(BASE + '/update-task', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ TaskId: Number(id), Name: name, Deadline: deadline })
+        });
+        if (res.ok) {
+          showMsg('msg-update', 'Tarea actualizada correctamente.', true);
+          document.getElementById('u-id').value = '';
+          document.getElementById('u-name').value = '';
+          document.getElementById('u-deadline').value = '';
+          loadTasks();
+        } else {
+          showMsg('msg-update', 'Error al actualizar la tarea.', false);
+        }
+      } catch {
+        showMsg('msg-update', 'Error de conexión.', false);
+      }
+    }
+
+    async function deleteTask() {
+      const id = document.getElementById('d-id').value.trim();
+      if (!id) { showMsg('msg-delete', 'Ingresa el ID de la tarea.', false); return; }
+
+      try {
+        const res = await fetch(BASE + '/delete-task', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ TaskId: Number(id) })
+        });
+        if (res.ok) {
+          showMsg('msg-delete', 'Tarea eliminada correctamente.', true);
+          document.getElementById('d-id').value = '';
+          loadTasks();
+        } else {
+          showMsg('msg-delete', 'Error al eliminar la tarea.', false);
+        }
+      } catch {
+        showMsg('msg-delete', 'Error de conexión.', false);
+      }
+    }
+
+    loadTasks();
+  </script>
+</body>
+</html>
